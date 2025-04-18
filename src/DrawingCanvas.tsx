@@ -71,14 +71,44 @@ export const DrawingCanvas = () => {
     setLastPoint(null);
   };
 
-  const downloadAsPNG = () => {
+  const doSubmitDrawing = async () => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    const link = document.createElement("a");
-    link.download = "drawing.png";
-    link.href = canvas.toDataURL("image/png");
-    link.click();
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    // Save current drawing
+    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+
+    // Fill with white background
+    ctx.fillStyle = "white";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Restore drawing on top of white background
+    ctx.putImageData(imageData, 0, 0);
+
+    const blob = await new Promise<Blob>((resolve) => {
+      canvas.toBlob((blob) => {
+        if (blob) resolve(blob);
+      }, "image/png");
+    });
+
+    const formData = new FormData();
+    formData.append("drawing", blob, "drawing.png");
+
+    try {
+      const response = await fetch("/drawing", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to upload drawing");
+      }
+    } catch (error) {
+      console.error("Error uploading drawing:", error);
+    }
   };
 
   return (
@@ -122,7 +152,7 @@ export const DrawingCanvas = () => {
       />
       <div>
         <button
-          onClick={downloadAsPNG}
+          onClick={doSubmitDrawing}
           style={{
             marginTop: "10px",
             padding: "8px 16px",
@@ -133,7 +163,7 @@ export const DrawingCanvas = () => {
             cursor: "pointer",
           }}
         >
-          Download as PNG
+          Submit your drawing
         </button>
       </div>
     </div>
