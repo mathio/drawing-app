@@ -2,6 +2,7 @@ import { serve } from "@hono/node-server";
 import { Hono } from "hono";
 import { writeFile } from "fs/promises";
 import { join } from "path";
+import { initWeaviate, doWeaviate } from "./server.weaviate";
 
 const app = new Hono();
 
@@ -20,11 +21,19 @@ app.post("/drawing", async (c) => {
 
     await writeFile(filePath, Buffer.from(buffer));
 
-    return c.json({ success: true, fileName });
+    const base64Image = Buffer.from(buffer).toString("base64");
+    await doWeaviate(base64Image);
+
+    return c.json({ success: true, fileName, base64Image });
   } catch (error) {
     console.error("Error handling drawing upload:", error);
     return c.json({ error: "Failed to process drawing" }, 500);
   }
+});
+
+app.get("/init", async (c) => {
+  await initWeaviate();
+  return c.json({ success: true });
 });
 
 // Proxy requests to Vite dev server

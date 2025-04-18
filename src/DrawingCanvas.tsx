@@ -28,6 +28,9 @@ export const DrawingCanvas = () => {
     resizeCanvas();
     window.addEventListener("resize", resizeCanvas);
 
+    ctx.fillStyle = "white";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
     return () => window.removeEventListener("resize", resizeCanvas);
   }, []);
 
@@ -80,12 +83,6 @@ export const DrawingCanvas = () => {
 
     // Save current drawing
     const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-
-    // Fill with white background
-    ctx.fillStyle = "white";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-    // Restore drawing on top of white background
     ctx.putImageData(imageData, 0, 0);
 
     const blob = await new Promise<Blob>((resolve) => {
@@ -114,6 +111,16 @@ export const DrawingCanvas = () => {
   return (
     <div>
       <div style={{ marginBottom: "10px" }}>
+        <h1
+          style={{
+            display: "inline-block",
+            fontFamily: "monospace",
+            fontSize: "30px",
+          }}
+        >
+          Draw-a-goose! 🪿
+        </h1>
+        <span style={{ display: "inline-block", width: "500px" }}></span>
         <label htmlFor="colorPicker" style={{ marginRight: "10px" }}>
           Drawing Color:{" "}
         </label>
@@ -124,20 +131,19 @@ export const DrawingCanvas = () => {
           onChange={(e) => setDrawingColor(e.target.value)}
           style={{ cursor: "pointer" }}
         />
-        <div style={{ marginTop: "10px" }}>
-          <label htmlFor="lineWidth" style={{ marginRight: "10px" }}>
-            Line Thickness: {lineWidth}px
-          </label>
-          <input
-            type="range"
-            id="lineWidth"
-            min="1"
-            max="20"
-            value={lineWidth}
-            onChange={(e) => setLineWidth(Number(e.target.value))}
-            style={{ cursor: "pointer" }}
-          />
-        </div>
+        <span style={{ display: "inline-block", width: "20px" }}></span>
+        <label htmlFor="lineWidth" style={{ marginRight: "10px" }}>
+          Line Thickness: {lineWidth}px
+        </label>
+        <input
+          type="range"
+          id="lineWidth"
+          min="1"
+          max="20"
+          value={lineWidth}
+          onChange={(e) => setLineWidth(Number(e.target.value))}
+          style={{ cursor: "pointer" }}
+        />
       </div>
       <canvas
         ref={canvasRef}
@@ -148,6 +154,7 @@ export const DrawingCanvas = () => {
         style={{
           border: "1px solid #000",
           cursor: "crosshair",
+          backgroundColor: "white",
         }}
       />
       <div>
